@@ -47,23 +47,14 @@ class Game
     # should be able to take a single letter as a guess or be able to guess whole word
     if guess.length == 1
       guess_letter(guess)
-    elsif @answer == guess
-      @winner = true
-    elsif guess == 'save'
-      save_json
-    elsif guess == 'load'
-      load_json
     else
-      puts 'WRONG!'
-      @score += 1
+      guess_word(guess)
     end
   end
 
   def guess_letter(letter)
-    # creates a mock answer that replaces the characters we have already guessed correctly with 0s
-    # this helps prevent a bug related to dupliacte characters in @answer
     answer_arr = subtracted_answer_array
-    # see if our guess is included in the sanitized array
+    # see if our guess is included in the mock answer array
     if answer_arr.include?(letter)
       # determine location based off sanitized input to prevent bug related to duplicate characters in @answer
       @player_view[answer_arr.index(letter)] = letter
@@ -75,7 +66,20 @@ class Game
     @winner = true unless @player_view.any?('_')
   end
 
-  # replaces all elements we have already guessed in the answer to zero
+  def guess_word(word)
+    case word
+    when @answer
+      @winner = true
+    when 'save'
+      save_json
+    when 'load'
+      load_json
+    else
+      @score += 1
+    end
+  end
+
+  # changes all elements we have already correctly guessed in the answer to zero
   # this helps prevents a duplicate error
   def subtracted_answer_array
     answer_arr = @answer.split('')
