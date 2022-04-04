@@ -45,14 +45,13 @@ class Game
   def take_turn(guess)
     # should be able to take a single letter as a guess or be able to guess whole word
     if guess.length == 1
-      # see if guess is in word
-      if @answer.split('').any?(guess)
-        # determine index of that letter in @answer, asign the value of guess to that index position in @player_view
-        # PROBLEM: in case where word has repeated letters (example: "skill"), the letter exists in the word, but index
-        # only returns the first occurance of said value, leaving you trapped in a loop
-        # TRY: removing one instance of each letter from @answer that have already been used, then comparing
-        # figuring out the true index afterwords will be difficult  
-        @player_view[@answer.split('').index(guess)] = guess
+      # creates a mock answer that replaces the characters we have already guessed correctly with 0s
+      # this helps prevent a bug related to dupliacte characters in @answer
+      answer_arr = subtracted_answer_array
+      # see if our guess is included in the sanitized array
+      if answer_arr.include?(guess)
+        # determine location based off sanitized input to prevent bug related to duplicate characters in @answer
+        @player_view[answer_arr.index(guess)] = guess
       else
         @incorrect_guesses << guess
         @score += 1
@@ -70,6 +69,18 @@ class Game
     @winner = true unless @player_view.any?('_')
   end
 
+  # replaces all elements we have already guessed in the answer to zero
+  # this helps prevents a duplicate error
+  def subtracted_answer_array
+    answer_arr = @answer.split('')
+    @player_view.each do |letter|
+      unless letter == '_'
+        answer_arr[answer_arr.index(letter)] = "0"
+      end
+    end
+    answer_arr
+  end
+
   def printer
 
   end
@@ -81,4 +92,3 @@ Game.new.start_game()
 # O
 #/|\
 #/ \
- 
