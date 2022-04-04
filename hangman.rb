@@ -1,31 +1,30 @@
+require 'json'
+
 class Game
   def initialize
-    @answer = random_word()
+    @answer = random_word
     @player_view = Array.new(@answer.length, '_')
     @incorrect_guesses = Array.new
     @score = 0
     p @answer # delte this later
-    # start_game()
   end
 
-  def random_word()
+  def random_word
     words = File.readlines('google-10000-english-no-swears.txt')
     word_choices = []
     words.each do |word|
       word = word.chomp
-      if word.length > 4 && word.length < 13
-        word_choices << word
-      end
+      word_choices << word if word.length > 4 && word.length < 13
     end
     word_choices.sample
   end
 
-  def start_game()
+  def start_game
     @winner = nil
-    while @score < 6 && @winner == nil
+    while @score < 6 && @winner.nil?
+      puts "\n" * 100
       take_turn_dialog
-      take_turn(gets.chomp)
-      # print scoreboard
+      take_turn(gets.chomp.downcase)
     end
     if @winner == true
       puts 'You figured out the word!'
@@ -56,14 +55,15 @@ class Game
         @incorrect_guesses << guess
         @score += 1
       end
+    elsif @answer == guess
+      @winner = true
+    elsif guess == 'save'
+      save_json
+    elsif guess == 'load'
+      load_json
     else
-      #check if word matches answer, if it does, game over, else "WRONG", no other feedback
-      if @answer == guess
-        @winner = true
-      else
-        puts "WRONG!"
-        @score += 1
-      end
+      puts 'WRONG!'
+      @score += 1
     end
     # if @player_view doesn't contain any mystery fields (i.e. '_') then the word has been solved, and the game is over
     @winner = true unless @player_view.any?('_')
@@ -75,20 +75,39 @@ class Game
     answer_arr = @answer.split('')
     @player_view.each do |letter|
       unless letter == '_'
-        answer_arr[answer_arr.index(letter)] = "0"
+        answer_arr[answer_arr.index(letter)] = '0'
       end
     end
     answer_arr
   end
 
-  def printer
+  def save_json
+    json = JSON.generate(
+      {
+        answer: @answer,
+        player_view: @player_view,
+        incorrect_guesses: @incorrect_guesses,
+        score: @score,
+        winner: @winner
+      }
+    )
+    File.open('save_data.txt', 'w') { |file| file.write(json) }
+  end
 
+  def load_json
+    ruby_hash = JSON.parse(File.read('save_data.txt'))
+
+    @answer = ruby_hash['answer']
+    @player_view = ruby_hash['player_view']
+    @incorrect_guesses = ruby_hash['incorrect_guesses']
+    @score = ruby_hash['score']
+    @winner = ruby_hash['winner']
   end
 end
 
-Game.new.start_game()
+Game.new.start_game
 
 # max number of turns = 6
-# O
-#/|\
-#/ \
+#  O
+# /|\
+# / \
