@@ -1,12 +1,15 @@
+# frozen_string_literal: true
+
 require 'json'
 
+# should initialize a word, create an array of mystery characters with length of word, then allow player to make a guess
 class Game
   def initialize
     @answer = random_word
     @player_view = Array.new(@answer.length, '_')
-    @incorrect_guesses = Array.new
+    @incorrect_guesses = []
     @score = 0
-    p @answer # delte this later
+    @winner = nil
   end
 
   def random_word
@@ -20,41 +23,30 @@ class Game
   end
 
   def start_game
-    @winner = nil
     while @score < 6 && @winner.nil?
-      puts "\n" * 100
       take_turn_dialog
       take_turn(gets.chomp.downcase)
     end
     if @winner == true
-      puts 'You figured out the word!'
+      puts "You figured out the word, it was #{@answer}"
     else
-      puts 'You did not figure out the word'
+      puts "You did not figure out the word, it was #{@answer}"
     end
-    puts "The word was #{@answer}"
   end
 
   def take_turn_dialog
+    puts "\n" * 100
     p @player_view
-    p @incorrect_guesses
+    puts "Incorrect Guesses: #{@incorrect_guesses.join(', ')}"
     puts "You have #{6 - @score} guesses left"
-    puts 'Enter 1 letter or the whole word'
+    puts 'Enter 1 letter to guess that letter, or enter the whole word if you think you know what it is'
+    puts "You can enter 'save' to save the current game, or 'load' to load the prevously saved game"
   end
 
   def take_turn(guess)
     # should be able to take a single letter as a guess or be able to guess whole word
     if guess.length == 1
-      # creates a mock answer that replaces the characters we have already guessed correctly with 0s
-      # this helps prevent a bug related to dupliacte characters in @answer
-      answer_arr = subtracted_answer_array
-      # see if our guess is included in the sanitized array
-      if answer_arr.include?(guess)
-        # determine location based off sanitized input to prevent bug related to duplicate characters in @answer
-        @player_view[answer_arr.index(guess)] = guess
-      else
-        @incorrect_guesses << guess
-        @score += 1
-      end
+      guess_letter(guess)
     elsif @answer == guess
       @winner = true
     elsif guess == 'save'
@@ -63,6 +55,20 @@ class Game
       load_json
     else
       puts 'WRONG!'
+      @score += 1
+    end
+  end
+
+  def guess_letter(letter)
+    # creates a mock answer that replaces the characters we have already guessed correctly with 0s
+    # this helps prevent a bug related to dupliacte characters in @answer
+    answer_arr = subtracted_answer_array
+    # see if our guess is included in the sanitized array
+    if answer_arr.include?(letter)
+      # determine location based off sanitized input to prevent bug related to duplicate characters in @answer
+      @player_view[answer_arr.index(letter)] = letter
+    elsif !@incorrect_guesses.include?(letter)
+      @incorrect_guesses << letter
       @score += 1
     end
     # if @player_view doesn't contain any mystery fields (i.e. '_') then the word has been solved, and the game is over
@@ -74,9 +80,7 @@ class Game
   def subtracted_answer_array
     answer_arr = @answer.split('')
     @player_view.each do |letter|
-      unless letter == '_'
-        answer_arr[answer_arr.index(letter)] = '0'
-      end
+      answer_arr[answer_arr.index(letter)] = '0' unless letter == '_'
     end
     answer_arr
   end
@@ -106,8 +110,3 @@ class Game
 end
 
 Game.new.start_game
-
-# max number of turns = 6
-#  O
-# /|\
-# / \
