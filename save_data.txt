@@ -1,1 +1,0 @@
-{"answer":"nicaragua","player_view":["_","_","_","_","_","_","_","_","_"],"incorrect_guesses":[],"score":0,"winner":null}
