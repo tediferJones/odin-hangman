@@ -28,9 +28,9 @@ class Game
       take_turn(gets.chomp.downcase)
     end
     if @winner == true
-      puts "You figured out the word, it was #{@answer}"
+      puts "You figured out the word, the word was #{@answer}"
     else
-      puts "You did not figure out the word, it was #{@answer}"
+      puts "You did not figure out the word, the word was #{@answer}"
     end
   end
 
